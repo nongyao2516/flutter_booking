@@ -85,72 +85,66 @@ class _RoomListState extends State<RoomList> {
   ////////////////////////////////////////////////////////////
 
   @override
-  Widget build(BuildContext context) {
+Widget build(BuildContext context) {
 
-    return Scaffold(
+  return Scaffold(
 
-      appBar: AppBar(
-        title: const Text("Meeting Room Booking"),
-      ),
+    appBar: AppBar(
+      title: const Text("Meeting Room Booking"),
+    ),
 
-      body: Column(
+    body: Column(
 
-        children: [
+      children: [
 
-          //////////////////////////////////////////////////////
-          // SEARCH BOX
-          //////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////
+        // SEARCH BOX
+        //////////////////////////////////////////////////////
 
-          Padding(
+        Padding(
 
-            padding: const EdgeInsets.all(10),
+          padding: const EdgeInsets.all(10),
 
-            child: TextField(
+          child: TextField(
 
-              controller: searchController,
+            controller: searchController,
 
-              decoration: const InputDecoration(
-                hintText: "ค้นหาห้องประชุม...",
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(),
-              ),
-
-              onChanged: searchRoom,
-
+            decoration: const InputDecoration(
+              hintText: "ค้นหาห้องประชุม...",
+              prefixIcon: Icon(Icons.search),
+              border: OutlineInputBorder(),
             ),
+
+            onChanged: searchRoom,
 
           ),
 
-          //////////////////////////////////////////////////////
-          // ROOM LIST
-          //////////////////////////////////////////////////////
+        ),
 
-          Expanded(
+        //////////////////////////////////////////////////////
+        // ROOM LIST
+        //////////////////////////////////////////////////////
 
-            child: filteredRooms.isEmpty
-                ? const Center(child: Text("ไม่พบข้อมูลห้อง"))
-                : ListView.builder(
+        Expanded(
+          child: filteredRooms.isEmpty
+              ? const Center(child: Text("ไม่พบข้อมูลห้อง"))
+              : ListView.builder(
+                  itemCount: filteredRooms.length,
+                  itemBuilder: (context, index) {
 
-                    itemCount: filteredRooms.length,
+                    final room = filteredRooms[index];
 
-                    itemBuilder: (context, index) {
+                    String imageUrl =
+                        "${baseUrl}images/${room['image'] ?? ''}";
 
-                      final room = filteredRooms[index];
+                    return Card(
+                      margin: const EdgeInsets.all(10),
+                      elevation: 3,
+                      child: ListTile(
 
-                      String imageUrl =
-                          "${baseUrl}images/${room['image'] ?? ''}";
-
-                      return Card(
-
-                        margin: const EdgeInsets.all(10),
-
-                        child: ListTile(
-
-                          //////////////////////////////////////////////////
-                          // ROOM IMAGE
-                          //////////////////////////////////////////////////
-
-                          leading: Image.network(
+                        leading: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.network(
                             imageUrl,
                             width: 70,
                             height: 70,
@@ -158,57 +152,53 @@ class _RoomListState extends State<RoomList> {
                             errorBuilder: (_, __, ___) =>
                                 const Icon(Icons.meeting_room),
                           ),
-
-                          //////////////////////////////////////////////////
-                          // ROOM NAME
-                          //////////////////////////////////////////////////
-
-                          title: Text(room['room_name'] ?? ""),
-
-                          //////////////////////////////////////////////////
-                          // ROOM DETAIL
-                          //////////////////////////////////////////////////
-
-                          subtitle: Text(
-                            "Capacity: ${room['capacity']} คน\nLocation: ${room['location']}",
-                          ),
-
-                          //////////////////////////////////////////////////
-                          // BOOK BUTTON
-                          //////////////////////////////////////////////////
-
-                          trailing: ElevatedButton(
-
-                            child: const Text("จอง"),
-
-                            onPressed: () {
-
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => BookingPage(room: room),
-                                ),
-                              );
-
-                            },
-
-                          ),
-
                         ),
 
-                      );
+                        title: Text(
+                          room['room_name'] ?? "",
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
 
-                    },
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text("Capacity: ${room['capacity']} คน"),
+                            Text("Location: ${room['location']}"),
+                          ],
+                        ),
 
-                  ),
+                        trailing: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            foregroundColor: Colors.white,
+                          ),
+                          child: const Text("จอง"),
+                          onPressed: () {
 
-          )
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => BookingPage(room: room),
+                              ),
+                            );
 
-        ],
+                          },
+                        ),
 
-      ),
+                      ),
+                    );
 
-    );
+                  },
+                ),
+        ),
 
-  }
-} 
+      ], // 🔴 ปิด children ตรงนี้
+
+    ),
+
+  );
+
+}
+}
