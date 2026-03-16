@@ -14,6 +14,7 @@ try {
         $sql = "SELECT 
                     b.id,
                     r.room_name,
+                    r.image,
                     b.booking_date,
                     b.start_time,
                     b.end_time,
@@ -21,7 +22,8 @@ try {
                 FROM bookings b
                 JOIN rooms r ON b.room_id = r.id
                 WHERE b.room_id = ?
-                ORDER BY b.booking_date DESC";
+                AND b.booking_date >= CURDATE()
+                ORDER BY b.booking_date ASC";
 
         $stmt = $conn->prepare($sql);
         $stmt->execute([$room_id]);
@@ -31,13 +33,15 @@ try {
         $sql = "SELECT 
                     b.id,
                     r.room_name,
+                    r.image,
                     b.booking_date,
                     b.start_time,
                     b.end_time,
                     b.user_name
                 FROM bookings b
                 JOIN rooms r ON b.room_id = r.id
-                ORDER BY b.booking_date DESC";
+                WHERE b.booking_date >= CURDATE()
+                ORDER BY b.booking_date ASC";
 
         $stmt = $conn->query($sql);
 

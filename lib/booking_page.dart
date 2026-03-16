@@ -28,14 +28,14 @@ class _BookingPageState extends State<BookingPage> {
     DateTime? picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
-      firstDate: DateTime(2024),
+      firstDate: DateTime.now(), // ห้ามเลือกวันที่ย้อนหลัง
       lastDate: DateTime(2030),
     );
 
     if (picked != null) {
       setState(() {
         dateController.text =
-            "${picked.year}-${picked.month}-${picked.day}";
+            "${picked.year}-${picked.month.toString().padLeft(2,'0')}-${picked.day.toString().padLeft(2,'0')}";
       });
     }
 
@@ -55,7 +55,7 @@ class _BookingPageState extends State<BookingPage> {
     if (picked != null) {
       setState(() {
         startController.text =
-            "${picked.hour}:${picked.minute.toString().padLeft(2, '0')}";
+            "${picked.hour.toString().padLeft(2,'0')}:${picked.minute.toString().padLeft(2,'0')}";
       });
     }
 
@@ -71,7 +71,7 @@ class _BookingPageState extends State<BookingPage> {
     if (picked != null) {
       setState(() {
         endController.text =
-            "${picked.hour}:${picked.minute.toString().padLeft(2, '0')}";
+            "${picked.hour.toString().padLeft(2,'0')}:${picked.minute.toString().padLeft(2,'0')}";
       });
     }
 
@@ -83,8 +83,29 @@ class _BookingPageState extends State<BookingPage> {
 
   Future saveBooking() async {
 
+    // ตรวจสอบกรอกข้อมูลครบ
+    if(nameController.text.isEmpty ||
+        dateController.text.isEmpty ||
+        startController.text.isEmpty ||
+        endController.text.isEmpty){
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("กรุณากรอกข้อมูลให้ครบ")),
+      );
+      return;
+    }
+
+    // ตรวจสอบเวลาเริ่ม < เวลาสิ้นสุด
+    if(startController.text.compareTo(endController.text) >= 0){
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("เวลาเริ่มต้องน้อยกว่าเวลาสิ้นสุด")),
+      );
+      return;
+    }
+
     var url = Uri.parse(
-        "http://localhost/flutter_booking/php_api/add_booking.php"); // แก้เป็น URL ของ API
+        "http://localhost/flutter_booking/php_api/add_booking.php");
 
     var response = await http.post(
       url,
@@ -101,31 +122,29 @@ class _BookingPageState extends State<BookingPage> {
 
     var data = jsonDecode(response.body);
 
+    if (data['status'] == "success") {
 
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("จองสำเร็จ")),
+      );
 
-if (data['status'] == "success") {
+      Navigator.pop(context);
 
-  ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(content: Text("จองสำเร็จ")),
-  );
+    }
+    else if(data['status']=="unavailable"){
 
-  Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("ห้องไม่ว่าง เวลาชนกัน")),
+      );
 
-}
-else if(data['status']=="unavailable"){
+    }
+    else{
 
-  ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(content: Text("ห้องไม่ว่าง เวลาชนกัน")),
-  );
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("เกิดข้อผิดพลาด")),
+      );
 
-}
-else{
-
-  ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(content: Text("เกิดข้อผิดพลาด")),
-  );
-
-}
+    }
 
   }
 
@@ -142,105 +161,142 @@ else{
   // UI
   ////////////////////////////////////////////////////////////
 
-  @override
-  Widget build(BuildContext context) {
+ @override
+Widget build(BuildContext context) {
 
-    String roomName = widget.room['room_name'] ?? "Meeting Room";
+  String roomName = widget.room['room_name'] ?? "Meeting Room";
+  String roomImage = widget.room['image'] ?? "";
 
-    return Scaffold(
+  return Scaffold(
 
-      appBar: AppBar(
-        title: Text("จอง $roomName"),
-      ),
+    appBar: AppBar(
+      title: Text("จอง $roomName"),
+    ),
 
-      body: Padding(
+    body: Padding(
 
-        padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
 
-        child: SingleChildScrollView(
+      child: SingleChildScrollView(
 
-          child: Column(
+        child: Column(
 
-            children: [
+          children: [
 
-              Text(
-                roomName,
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+            ////////////////////////////////////////////////////////////
+            // ROOM IMAGE
+            ////////////////////////////////////////////////////////////
 
-              const SizedBox(height: 20),
-
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(
-                  labelText: "ชื่อผู้จอง",
-                  border: OutlineInputBorder(),
-                ),
-              ),
-
-              const SizedBox(height: 15),
-
-              TextField(
-                controller: dateController,
-                readOnly: true,
-                decoration: const InputDecoration(
-                  labelText: "วันที่จอง",
-                  border: OutlineInputBorder(),
-                  suffixIcon: Icon(Icons.calendar_today),
-                ),
-                onTap: pickDate,
-              ),
-
-              const SizedBox(height: 15), 
-
-              TextField(
-                controller: startController,
-                readOnly: true,
-                decoration: const InputDecoration(
-                  labelText: "เวลาเริ่ม",
-                  border: OutlineInputBorder(),
-                  suffixIcon: Icon(Icons.access_time),
-                ),
-                onTap: pickStartTime,
-              ),
-
-              const SizedBox(height: 15),
-
-              TextField(
-                controller: endController,
-                readOnly: true,
-                decoration: const InputDecoration(
-                  labelText: "เวลาสิ้นสุด",
-                  border: OutlineInputBorder(),
-                  suffixIcon: Icon(Icons.access_time),
-                ),
-                onTap: pickEndTime,
-              ),
-
-              const SizedBox(height: 25),
-
-              SizedBox(
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.network(
+                "http://localhost/flutter_booking/php_api/images/$roomImage",
                 width: double.infinity,
-                child: ElevatedButton(
+                height: 180,
+                fit: BoxFit.cover,
+              ),
+            ),
 
-                  onPressed: saveBooking,   // เรียก API
+            const SizedBox(height: 15),
 
-                  child: const Text("บันทึกการจอง"),
-                ),
-              )
+            ////////////////////////////////////////////////////////////
+            // ROOM NAME
+            ////////////////////////////////////////////////////////////
 
-            ],
+            Text(
+              roomName,
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
 
-          ),
+            const SizedBox(height: 20),
+
+            ////////////////////////////////////////////////////////////
+            // USER NAME
+            ////////////////////////////////////////////////////////////
+
+            TextField(
+              controller: nameController,
+              decoration: const InputDecoration(
+                labelText: "ชื่อผู้จอง",
+                border: OutlineInputBorder(),
+              ),
+            ),
+
+            const SizedBox(height: 15),
+
+            ////////////////////////////////////////////////////////////
+            // DATE
+            ////////////////////////////////////////////////////////////
+
+            TextField(
+              controller: dateController,
+              readOnly: true,
+              decoration: const InputDecoration(
+                labelText: "วันที่จอง",
+                border: OutlineInputBorder(),
+                suffixIcon: Icon(Icons.calendar_today),
+              ),
+              onTap: pickDate,
+            ),
+
+            const SizedBox(height: 15),
+
+            ////////////////////////////////////////////////////////////
+            // START TIME
+            ////////////////////////////////////////////////////////////
+
+            TextField(
+              controller: startController,
+              readOnly: true,
+              decoration: const InputDecoration(
+                labelText: "เวลาเริ่ม",
+                border: OutlineInputBorder(),
+                suffixIcon: Icon(Icons.access_time),
+              ),
+              onTap: pickStartTime,
+            ),
+
+            const SizedBox(height: 15),
+
+            ////////////////////////////////////////////////////////////
+            // END TIME
+            ////////////////////////////////////////////////////////////
+
+            TextField(
+              controller: endController,
+              readOnly: true,
+              decoration: const InputDecoration(
+                labelText: "เวลาสิ้นสุด",
+                border: OutlineInputBorder(),
+                suffixIcon: Icon(Icons.access_time),
+              ),
+              onTap: pickEndTime,
+            ),
+
+            const SizedBox(height: 25),
+
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: saveBooking,
+                child: const Text("บันทึกการจอง"),
+              ),
+            )
+
+          ],
 
         ),
 
       ),
 
-    );
+    ),
 
-  }
+  );
+
+}
+
+
 }

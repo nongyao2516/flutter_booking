@@ -226,73 +226,59 @@ return Scaffold(
                         ],
 
                       ),
+trailing: Wrap(
+  direction: Axis.vertical,
+  spacing: 2,
+  children: [
 
-                      trailing: Column(
+    ElevatedButton(
+  style: ElevatedButton.styleFrom(
+    backgroundColor: Colors.blue,
+    foregroundColor: Colors.white,
+    minimumSize: const Size(70, 28),   // ลดจาก 32
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+  ),
+  child: const Text("จอง"),
+   
+    
+    
+      onPressed: () {
 
-                        mainAxisAlignment:
-                            MainAxisAlignment.center,
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => BookingPage(room: room),
+          ),
+        );
 
-                        children: [
+      },
+    ),
 
-                          ElevatedButton(
+    IconButton(
+      icon: const Icon(Icons.event_note, color: Colors.orange),
+      tooltip: "ดูข้อมูลการจอง",
+      onPressed: () {
 
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  Colors.blue,
-                              foregroundColor:
-                                  Colors.white,
-                              minimumSize:
-                                  const Size(70, 32),
-                            ),
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => BookingList(
+              roomId: room['id'],
+            ),
+          ),
+        );
 
-                            child: const Text("จอง"),
+      },
+    ),
 
-                            onPressed: () {
+  ],
+),
 
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      BookingPage(
-                                          room: room),
-                                ),
-                              );
-
-                            },
-
-                          ),
-
-                          const SizedBox(height: 3),
-
-                          TextButton(
-
-                            child: const Text(
-                              "ดูการจอง",
-                              style: TextStyle(
-                                  fontSize: 12),
-                            ),
-
-                            onPressed: () {
-
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      BookingList(
-                                    roomId:
-                                        room['id'],
-                                  ),
-                                ),
-                              );
-
-                            },
-
-                          ),
-
-                        ],
-
-                      ),
-
+   
+   
+   
+   
+   
                     ),
 
                   );
