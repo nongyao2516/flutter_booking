@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'booking_page.dart';
+import 'booking_list.dart';
 
 //////////////////////////////////////////////////////////////
 // API URL
@@ -14,191 +15,301 @@ const String baseUrl = "http://localhost/flutter_booking/php_api/";
 //////////////////////////////////////////////////////////////
 
 class RoomList extends StatefulWidget {
-  const RoomList({super.key});
+const RoomList({super.key});
 
-  @override
-  State<RoomList> createState() => _RoomListState();
+@override
+State<RoomList> createState() => _RoomListState();
 }
 
 class _RoomListState extends State<RoomList> {
 
-  List rooms = [];
-  List filteredRooms = [];
+List rooms = [];
+List filteredRooms = [];
 
-  TextEditingController searchController = TextEditingController();
+TextEditingController searchController = TextEditingController();
 
-  ////////////////////////////////////////////////////////////
-  // INIT
-  ////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
+// INIT
+////////////////////////////////////////////////////////////
 
-  @override
-  void initState() {
-    super.initState();
-    fetchRooms();
-  }
+@override
+void initState() {
+super.initState();
+fetchRooms();
+}
 
-  ////////////////////////////////////////////////////////////
-  // FETCH ROOMS
-  ////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
+// FETCH ROOMS
+////////////////////////////////////////////////////////////
 
-  Future<void> fetchRooms() async {
+Future<void> fetchRooms() async {
 
-    final response = await http.get(
-      Uri.parse("${baseUrl}get_rooms.php"),
-    );
 
-    if (response.statusCode == 200) {
+final response =
+    await http.get(Uri.parse("${baseUrl}get_rooms.php"));
 
-      setState(() {
+if (response.statusCode == 200) {
 
-        rooms = json.decode(response.body);
-        filteredRooms = rooms;
+  setState(() {
 
-      });
+    rooms = json.decode(response.body);
+    filteredRooms = rooms;
 
-    }
+  });
 
-  }
+}
 
-  ////////////////////////////////////////////////////////////
-  // SEARCH ROOM
-  ////////////////////////////////////////////////////////////
 
-  void searchRoom(String keyword) {
+}
 
-    final results = rooms.where((room) {
+////////////////////////////////////////////////////////////
+// SEARCH ROOM
+////////////////////////////////////////////////////////////
 
-      final name = room['room_name'].toString().toLowerCase();
+void searchRoom(String keyword) {
 
-      return name.contains(keyword.toLowerCase());
 
-    }).toList();
+final results = rooms.where((room) {
 
-    setState(() {
-      filteredRooms = results;
-    });
+  final name =
+      room['room_name'].toString().toLowerCase();
 
-  }
+  return name.contains(keyword.toLowerCase());
 
-  ////////////////////////////////////////////////////////////
-  // UI
-  ////////////////////////////////////////////////////////////
+}).toList();
 
-  @override
+setState(() {
+  filteredRooms = results;
+});
+
+}
+
+////////////////////////////////////////////////////////////
+// UI
+////////////////////////////////////////////////////////////
+
+@override
 Widget build(BuildContext context) {
 
-  return Scaffold(
+return Scaffold(
 
-    appBar: AppBar(
-      title: const Text("Meeting Room Booking"),
-    ),
+  ////////////////////////////////////////////////////////
+  // APPBAR
+  ////////////////////////////////////////////////////////
 
-    body: Column(
+  appBar: AppBar(
+    title: const Text("Meeting Room Booking"),
+    actions: [
 
-      children: [
+      IconButton(
+        icon: const Icon(Icons.list_alt),
+        tooltip: "ดูการจองทั้งหมด",
+        onPressed: () {
 
-        //////////////////////////////////////////////////////
-        // SEARCH BOX
-        //////////////////////////////////////////////////////
-
-        Padding(
-
-          padding: const EdgeInsets.all(10),
-
-          child: TextField(
-
-            controller: searchController,
-
-            decoration: const InputDecoration(
-              hintText: "ค้นหาห้องประชุม...",
-              prefixIcon: Icon(Icons.search),
-              border: OutlineInputBorder(),
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const BookingList(),
             ),
+          );
 
-            onChanged: searchRoom,
+        },
+      )
 
+    ],
+  ),
+
+  ////////////////////////////////////////////////////////
+  // BODY
+  ////////////////////////////////////////////////////////
+
+  body: Column(
+
+    children: [
+
+      //////////////////////////////////////////////////////
+      // SEARCH BOX
+      //////////////////////////////////////////////////////
+
+      Padding(
+
+        padding: const EdgeInsets.all(10),
+
+        child: TextField(
+
+          controller: searchController,
+
+          decoration: const InputDecoration(
+            hintText: "ค้นหาห้องประชุม...",
+            prefixIcon: Icon(Icons.search),
+            border: OutlineInputBorder(),
           ),
+
+          onChanged: searchRoom,
 
         ),
 
-        //////////////////////////////////////////////////////
-        // ROOM LIST
-        //////////////////////////////////////////////////////
+      ),
 
-        Expanded(
-          child: filteredRooms.isEmpty
-              ? const Center(child: Text("ไม่พบข้อมูลห้อง"))
-              : ListView.builder(
-                  itemCount: filteredRooms.length,
-                  itemBuilder: (context, index) {
+      //////////////////////////////////////////////////////
+      // ROOM LIST
+      //////////////////////////////////////////////////////
 
-                    final room = filteredRooms[index];
+      Expanded(
 
-                    String imageUrl =
-                        "${baseUrl}images/${room['image'] ?? ''}";
+        child: filteredRooms.isEmpty
 
-                    return Card(
-                      margin: const EdgeInsets.all(10),
-                      elevation: 3,
-                      child: ListTile(
+            ? const Center(child: Text("ไม่พบข้อมูลห้อง"))
 
-                        leading: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Image.network(
-                            imageUrl,
-                            width: 70,
-                            height: 70,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) =>
-                                const Icon(Icons.meeting_room),
-                          ),
-                        ),
+            : ListView.builder(
 
-                        title: Text(
-                          room['room_name'] ?? "",
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                itemCount: filteredRooms.length,
 
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text("Capacity: ${room['capacity']} คน"),
-                            Text("Location: ${room['location']}"),
-                          ],
-                        ),
+                itemBuilder: (context, index) {
 
-                        trailing: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
-                            foregroundColor: Colors.white,
-                          ),
-                          child: const Text("จอง"),
-                          onPressed: () {
+                  final room = filteredRooms[index];
 
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => BookingPage(room: room),
-                              ),
-                            );
+                  String imageUrl =
+                      "${baseUrl}images/${room['image'] ?? ''}";
 
-                          },
+                  return Card(
+
+                    margin: const EdgeInsets.all(10),
+                    elevation: 3,
+
+                    child: ListTile(
+
+                      isThreeLine: true,
+
+                      leading: ClipRRect(
+
+                        borderRadius:
+                            BorderRadius.circular(8),
+
+                        child: Image.network(
+
+                          imageUrl,
+                          width: 70,
+                          height: 70,
+                          fit: BoxFit.cover,
+
+                          errorBuilder: (_, __, ___) =>
+                              const Icon(
+                                  Icons.meeting_room),
+
                         ),
 
                       ),
-                    );
 
-                  },
-                ),
-        ),
+                      title: Text(
 
-      ], // 🔴 ปิด children ตรงนี้
+                        room['room_name'] ?? "",
 
-    ),
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold),
 
-  );
+                      ),
+
+                      subtitle: Column(
+
+                        crossAxisAlignment:
+                            CrossAxisAlignment.start,
+
+                        children: [
+
+                          Text(
+                              "Capacity: ${room['capacity']} คน"),
+
+                          Text(
+                              "Location: ${room['location']}"),
+
+                        ],
+
+                      ),
+
+                      trailing: Column(
+
+                        mainAxisAlignment:
+                            MainAxisAlignment.center,
+
+                        children: [
+
+                          ElevatedButton(
+
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  Colors.blue,
+                              foregroundColor:
+                                  Colors.white,
+                              minimumSize:
+                                  const Size(70, 32),
+                            ),
+
+                            child: const Text("จอง"),
+
+                            onPressed: () {
+
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      BookingPage(
+                                          room: room),
+                                ),
+                              );
+
+                            },
+
+                          ),
+
+                          const SizedBox(height: 3),
+
+                          TextButton(
+
+                            child: const Text(
+                              "ดูการจอง",
+                              style: TextStyle(
+                                  fontSize: 12),
+                            ),
+
+                            onPressed: () {
+
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      BookingList(
+                                    roomId:
+                                        room['id'],
+                                  ),
+                                ),
+                              );
+
+                            },
+
+                          ),
+
+                        ],
+
+                      ),
+
+                    ),
+
+                  );
+
+                },
+
+              ),
+
+      ),
+
+    ],
+
+  ),
+
+);
+
 
 }
+
 }
