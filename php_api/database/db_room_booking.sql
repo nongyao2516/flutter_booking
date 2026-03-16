@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 16, 2026 at 10:23 AM
+-- Generation Time: Mar 16, 2026 at 05:18 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.1.25
 
@@ -41,10 +41,11 @@ CREATE TABLE `bookings` (
 --
 
 INSERT INTO `bookings` (`id`, `room_id`, `user_name`, `booking_date`, `start_time`, `end_time`) VALUES
-(1, 1, 'เมษา', '2026-03-18', '12:00:00', '16:00:00'),
-(2, 1, 'สมาน ใจดี', '2026-03-18', '12:00:00', '16:30:00'),
+(2, 1, 'สมาน ใจดี', '2026-03-12', '12:00:00', '16:30:00'),
 (3, 2, 'มานะ ดีใจ', '2026-03-20', '12:00:00', '16:00:00'),
-(4, 3, 'มานี คนดี', '2026-03-20', '13:30:00', '15:30:00');
+(4, 3, 'มานี คนดี', '2026-03-20', '13:30:00', '15:30:00'),
+(5, 2, 'สมใจ มีมานะ', '2026-03-26', '08:00:00', '10:30:00'),
+(11, 2, 'นงเยาว์ สอนจะโปะ', '2026-03-20', '09:00:00', '12:00:00');
 
 -- --------------------------------------------------------
 
@@ -96,7 +97,7 @@ ALTER TABLE `rooms`
 -- AUTO_INCREMENT for table `bookings`
 --
 ALTER TABLE `bookings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `rooms`
